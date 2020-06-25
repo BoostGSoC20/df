@@ -13,6 +13,7 @@ Distributed under the [Boost Software License, Version 1.0](http://www.boost.org
 
 ## Properties
 * Header-only
+* Data frame extension requires C++17 compatible compiler, compiles with clang 11.0. See data frame [README.md](include/boost/numeric/ublas/df/README.md) for more information.
 * Tensor extension requires C++17 compatible compiler, compiles with
   * gcc 7.3.0
   * clang 6.0
