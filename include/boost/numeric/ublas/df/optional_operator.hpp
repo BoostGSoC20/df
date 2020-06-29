@@ -17,6 +17,10 @@ namespace numeric {
 namespace ublas {
 namespace df {
 
+
+// Operator overloading function for output stream
+//  If variable has value, output value, otherwise output NULLOPT
+
 const std::string NULLOPT = "Null";
 
 template<typename T>
@@ -29,9 +33,12 @@ std::ostream& operator<<(std::ostream &out, const std::optional<T> &rhs) {
 	return out;
 }
 
+// Helper function for unary operators
+//  Cases for templated typename T:
+//   (1) `op` std::optional<T> 
 
-template<typename T>
-inline std::optional<T> operator_(const std::optional<T> &rhs, std::function<T (T)> func) {
+template<typename TIn, typename TOut=TIn>
+inline std::optional<TOut> operator_(const std::optional<TIn> &rhs, std::function<TOut (TIn)> func) {
 	if (rhs.has_value()) {
 		return func(rhs.value());
 	} else {
@@ -39,6 +46,11 @@ inline std::optional<T> operator_(const std::optional<T> &rhs, std::function<T (
 	}
 }
 
+// Helper function for binary operators
+//  Cases for templated typename T:
+//   (1) T `op` std::optional<T>
+//   (2) std::optional<T> `op` T
+//   (3) std::optional<T> `op` std::optional<T>
 
 template<typename T>
 inline std::optional<T> operator_(const T &lhs, const std::optional<T> &rhs, std::function<T (T, T)> func) {
@@ -67,27 +79,39 @@ inline std::optional<T> operator_(const std::optional<T> &lhs, const std::option
 	}
 }
 
+// Operator overloading function for unary operators
+//  Implemented operators: + - ! ~
 
 template<typename T>
 std::optional<T> operator+(const std::optional<T> &rhs) {
-	return operator_<T>(rhs, [](T x) { return +x; });
+	return operator_<T, T>(rhs, [](T x) { return +x; });
 }
 
 template<typename T>
 std::optional<T> operator-(const std::optional<T> &rhs) {
-	return operator_<T>(rhs, std::negate<T>());
-}
-
-template<typename T>
-std::optional<T> operator!(const std::optional<T> &rhs) {
-	return operator_<T>(rhs, std::logical_not<T>());
+	return operator_<T, T>(rhs, std::negate<T>());
 }
 
 template<typename T>
 std::optional<T> operator~(const std::optional<T> &rhs) {
-	return operator_<T>(rhs, std::bit_not<T>());
+	return operator_<T, T>(rhs, std::bit_not<T>());
 }
 
+template<typename T>
+std::optional<bool> operator!(const std::optional<T> &rhs) {
+	return operator_<T, bool>(rhs, std::logical_not<T>());
+}
+
+// Operator overloading function for binary operators
+//  Implemented operators: *
+//  Cases for templated typename T:
+//   (1) T `op` std::optional<T>
+//   (2) std::optional<T> `op` T
+//   (3) std::optional<T> `op` std::optional<T>
+//   (4) std::optional<T> `op` std::nullopt_t
+//   (5) std::nullopt_t `op` std::optional<T>
+
+// operator*
 
 template<typename T>
 std::optional<T> operator*(const T &lhs, const std::optional<T> &rhs) {

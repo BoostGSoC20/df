@@ -24,8 +24,12 @@ namespace numeric {
 namespace ublas {
 namespace df {
 
+// Column reference declaration for use in definition of column class
+
 template<typename TElement>
 class column_ref;
+
+// Column class
 
 template<typename TElement>
 class column {
@@ -33,22 +37,30 @@ class column {
 	using optional_type = std::optional<element_type>;
 
 private:
+	// Store of content
+
 	std::vector<optional_type> content_;
 
+	// Helper function for index bounds checking
+
 	inline bool test_index_(size_t index) const {
-		// type size_t cannot be negative
+		// type size_t cannot be negative, no need to test
 		return index < this->content_.size();
 	}
 
-	template <typename T=std::function<optional_type (optional_type)> >
-	inline auto operator_(T func) const {
-		std::vector<optional_type> content;
+	// Helper function for unary operations
+
+	template <typename TOut=element_type>
+	inline auto operator_(std::function<std::optional<TOut> (optional_type)> func) const {
+		std::vector<std::optional<TOut> > content;
 		for (auto element: this->content_) {
 			content.push_back(func(element));
 		}
-		return column<element_type>(content);
+		return column<TOut>(content);
 	}
 public:
+	// Constructor
+
 	column() { }
 
 	template <typename T=const std::initializer_list<element_type> >
@@ -58,7 +70,11 @@ public:
 		}
 	}
 
+	// Destructor
+
 	~column() {}
+
+	// Operator overloading function for broadcasted assignment
 
 	auto operator=(element_type value) {
 		std::fill(this->content_.begin(), this->content_.end(), 
@@ -72,9 +88,13 @@ public:
 		return *this;
 	}
 
+	// Operator overloading function for subscript referencing
+
 	column_ref<element_type> operator[](size_t index) {
 		return column_ref<element_type>(*this, index);
 	}
+
+	// Class methods (wrapper of std::vector class methods)
 
 	auto at(size_t index) const {
 		if (this->test_index_(index)) {
@@ -120,6 +140,8 @@ public:
 		this->content_.clear();
 	}
 
+	// Helper functions for operations on indexed element
+
 	bool set(size_t index, element_type value) {
 		bool test = this->test_index_(index);
 		if (test) {
@@ -140,33 +162,45 @@ public:
 		return test;
 	}
 
+	// Operator overloading function for unary operators
+	//  Implemented operators: + - ! ~
+
 	auto operator+() const {
-		return this->operator_([](auto x) { return +x; });
+		return this->operator_<element_type>([](auto x) { return +x; });
 	}
 
 	auto operator-() const {
-		return this->operator_([](auto x) { return -x; });
-	}
-
-	auto operator!() const {
-		return this->operator_([](auto x) { return !x; });
+		return this->operator_<element_type>([](auto x) { return -x; });
 	}
 
 	auto operator~() const {
-		return this->operator_([](auto x) { return ~x; });
+		return this->operator_<element_type>([](auto x) { return ~x; });
 	}
 
-	template<typename TInsertion>
-	friend std::ostream& operator<<(std::ostream &out, const column<TInsertion> &col);
+	auto operator!() const {
+		return this->operator_<bool>([](auto x) { return !x; });
+	}
+
+	// Friend declaration for output stream operator to access content_
+
+	template<typename T>
+	friend std::ostream& operator<<(std::ostream &out, const column<T> &col);
 };
 
-template<typename TInsertion>
-std::ostream& operator<<(std::ostream &out, const column<TInsertion> &col) {
+// Operator overloading function for output stream
+
+template<typename T>
+std::ostream& operator<<(std::ostream &out, const column<T> &col) {
 	for (auto element: col.content_) {
 		out << element << std::endl;
 	}
 	return out;
 }
+
+// Column reference class
+//  An intermediate class containing a column reference to (col) and an index (i) to provide 
+//   (1) assignment operation short-hand (example: col[i] = value;)
+//   (2) other operation short-hand (example: auto sum = col[i] + col[i+1];)
 
 template<typename TElement>
 class column_ref {
@@ -174,18 +208,29 @@ class column_ref {
 	using optional_type = std::optional<element_type>;
 
 private:
+	// Store of column reference and index
+
 	column<element_type> &column_;
 	size_t index_;
 
-	template <typename T=std::function<optional_type (optional_type)> >
-	inline auto operator_(T func) const {
+	// Helper function for unary operations
+
+	template <typename TOut=element_type>
+	inline auto operator_(std::function<std::optional<TOut> (optional_type)> func) const {
 		return func(this->column_.at(this->index_));
 	}
+
 public:
+	// Constructor
+
 	template <typename T=column<element_type> >
 	column_ref(T &col, size_t index) : column_(col), index_(index) { }
 
+	// Destructor
+
 	~column_ref() {}
+
+	// Class methods (wrapper of std::optional class methods)
 
 	auto has_value() const {
 		return this->column_.at(this->index_).has_value();
@@ -194,6 +239,8 @@ public:
 	auto value() const {
 		return this->column_.at(this->index_).value();
 	}
+
+	// Operator overloading function for assignment
 
 	auto operator=(element_type value) {
 		this->column_.set(this->index_, value);
@@ -205,28 +252,35 @@ public:
 		return *this;
 	}
 
+	// Operator overloading function for unary operators
+	//  Implemented operators: + - ! ~
+
 	auto operator+() const {
-		return this->operator_([](auto x) { return +x; });
+		return this->operator_<element_type>([](auto x) { return +x; });
 	}
 
 	auto operator-() const {
-		return this->operator_([](auto x) { return -x; });
-	}
-
-	auto operator!() const {
-		return this->operator_([](auto x) { return !x; });
+		return this->operator_<element_type>([](auto x) { return -x; });
 	}
 
 	auto operator~() const {
-		return this->operator_([](auto x) { return ~x; });
+		return this->operator_<element_type>([](auto x) { return ~x; });
 	}
 
-	template<typename TInsertion>
-	friend std::ostream& operator<<(std::ostream &out, const column_ref<TInsertion> &ref);
+	auto operator!() const {
+		return this->operator_<bool>([](auto x) { return !x; });
+	}
+
+	// Friend declaration for output stream operator to access content_
+
+	template<typename T>
+	friend std::ostream& operator<<(std::ostream &out, const column_ref<T> &ref);
 };
 
-template<typename TInsertion>
-std::ostream& operator<<(std::ostream &out, const column_ref<TInsertion> &ref) {
+// Operator overloading function for output stream
+
+template<typename T>
+std::ostream& operator<<(std::ostream &out, const column_ref<T> &ref) {
 	out << ref.column_.at(ref.index_);
 	return out;
 }

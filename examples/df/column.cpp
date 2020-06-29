@@ -9,6 +9,8 @@
 int main () {
 	using namespace boost::numeric::ublas::df;
 
+	std::cout << std::boolalpha; // output booleans as strings
+
 	// initialize from std::initializer_list
 
 	column<int32_t> column_1({
@@ -32,7 +34,6 @@ int main () {
 	std::cout << "size=" << column_1.size() << std::endl;
 	std::cout << "capacity=" << column_1.capacity() << std::endl;
 	std::cout << "max_size=" << column_1.max_size() << std::endl;
-	std::cout << std::boolalpha;
 	std::cout << "empty=" << column_1.empty() << std::endl;
 	std::cout << column_1 << std::endl;
 	// std::cout << column_1 + 1 << std::endl;
