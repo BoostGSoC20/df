@@ -37,7 +37,7 @@ class column {
 	using optional_type = std::optional<element_type>;
 
 private:
-	// Store of content
+	// Store of column content
 
 	std::vector<optional_type> content_;
 
@@ -60,6 +60,8 @@ private:
 	}
 public:
 	// Constructor
+	//  Note constructor takes as parameter a std::initializer_list 
+	//  or any data structure on which a range-based for loop can operate 
 
 	column() { }
 
@@ -71,6 +73,7 @@ public:
 	}
 
 	// Destructor
+	//  Note destructor destructs member variables
 
 	~column() {}
 
@@ -79,13 +82,13 @@ public:
 	auto operator=(element_type value) {
 		std::fill(this->content_.begin(), this->content_.end(), 
 			optional_type(value));
-		return *this;
+		return *this; // reference, not copy
 	}
 
 	auto operator=(std::nullopt_t value) {
 		std::fill(this->content_.begin(), this->content_.end(), 
 			value);
-		return *this;
+		return *this; // reference, not copy
 	}
 
 	// Operator overloading function for subscript referencing
@@ -95,6 +98,9 @@ public:
 	}
 
 	// Class methods (wrapper of std::vector class methods)
+	//  Note `emplace_back()` (as for `std::vector`) is not implemented 
+	//   since structure supplied is to be wrapped in `std::optional`
+	//  Note `get_allocator()` and `swap()` are not implemented
 
 	auto at(size_t index) const {
 		if (this->test_index_(index)) {
@@ -223,10 +229,10 @@ private:
 public:
 	// Constructor
 
-	template <typename T=column<element_type> >
-	column_ref(T &col, size_t index) : column_(col), index_(index) { }
+	column_ref(column<element_type> &col, size_t index) : column_(col), index_(index) { }
 
 	// Destructor
+	//  Note destructor destructs member variables
 
 	~column_ref() {}
 
