@@ -1,4 +1,4 @@
-# Boost.uBLAS Data Frame (df) Refactored
+# Boost.uBLAS Data Frame (df) Rewrite
 
 Boost uBLAS data frame is a header-only library implementation of data frames, a two-dimensional matrix-like data structure, inspired by data frames in Python Pandas and R.
 
@@ -7,6 +7,7 @@ This project is authored by Tom Kwok and funded by Google Summer of Code 2020.
 ## Implementation outline
 
 The source code of the implementation of data frame is placed in the `include/boost/numeric/ublas/df/` directory, structured as follows:
+* `optional_operator.hpp` defines operator overloading functions on `std::optional`.
 * `column.hpp` defines a column, similar to Series in Pandas or data frame column in R.
 * `frame.hpp` defines a frame, similar to DataFrame in Pandas or data frame in R.
 * `column_algorithm.hpp` defines algorithms on a column, including transform, statistical aggregate operations and string filter operations.
@@ -14,9 +15,13 @@ The source code of the implementation of data frame is placed in the `include/bo
 
 The implementation is defined in the `boost::numeric::ublas::df` namespace. 
 
-A column is stored as a `std::vector` of `std::optional` elements of templated type `element_type`.
+A column `column<element_type>` as a homogeneous container manages a homogeneous `std::vector<element_type>` of `std::optional` elements of templated type `element_type`. (This is a different design compared with a [2019 GSoC implementation](https://github.com/BoostGSoC19/data_frame), in which the column class `data_frame_col` as a heterogeneous container manages a homogeneous vector of elements.)
 
-No separate data structure is defined for a view of a frame or a column for simplicity. A filtering or merging operation produces a new frame or column data structure. Nonetheless, a frame or a column is mutable using the following operations: element access with `operator[]`.
+Note that `element_type` is a user-provided type, which could be any POD type (e.g. `int`, `int64_t`, `double`), any modern C++ class (e.g. `enum class`, `std::optional`), or any user-defined class.
+
+While it could be redundant to have, for example, `std::optional<T>` as the `element_type`, since `optional_type` would be `std::optional<std::optional<T> >`, it should be handled correctly by the library.
+
+No separate data structure is defined for a view of a frame or a column for simplicity. A filtering or merging operation produces a new frame or column data structure.
 
 ## Null value and type
 
@@ -26,24 +31,13 @@ A null value `std::nullopt` is printed `Null` (similar to `None` object in Pytho
 
 As a general rule, any binary operation on a null value and a non-null value (in either order) would return a null value.
 
-Since missing data is common in workflows with data frames, it is worth the extra effort in carefully designing data structures to handle null values. This can facilitate data imputation, which is to replace null values with substituted values inferred from non-null values. Features such as forward or backward fill functions to be implemented in algorithms.
+Since missing data is common in work-flows with data frames, it is worth the extra effort in carefully designing data structures to handle null values. This can facilitate data imputation, which is to replace null values with substituted values inferred from non-null values. Features such as value fill `fillna()`, forward fill `ffill()` and backward fill `bfill()` functions to be implemented in algorithms.
 
 ## C++ version requirement
 
 The implementation requires support for C++17 or newer to compile due to the use of `std::optional` class template defined in C++ standard libraries since C++17.
 
 The implementation requires support for C++14 or newer to compile due to the use of initializer lists `std::initializer_list` class template defined in C++ standard libraries since C++14.
-
-## Examples
-
-Examples of usage of data frame is placed in the [`examples/df/`](../../../../../examples/df/) directory.
-
-## Road-map
-
-* Design of data frame data structures in README documentation
-* C++17 implementation of `column` class
-* C++17 implementation of `frame` class
-* Expression template implementation of column and frame (which enables lazy evaluation with broadcasting)
 
 ## Programming choices
 
@@ -56,3 +50,14 @@ Also, note in particular the following programming choices made:
 * Naming convention for private class variables: `_column` or `column_` (picked)
 * Programming style of loops: `std::for_each` vs `for (auto ...)` loop (picked) 
 * Name of function for appending a column or frame to another: `extend()` or `append()` (picked)
+
+## Examples
+
+Examples of usage of data frame is placed in the [`examples/df/`](../../../../../examples/df/) directory.
+
+## Road-map
+
+* Design of data structures for data frames in README.md documentation
+* C++17 implementation of `column` class
+* C++17 implementation of `frame` class
+* Expression template implementation of operations on column and frame for lazy evaluation

@@ -20,7 +20,10 @@ int main () {
 	std::cout << column_1.at(0) << std::endl;
 	std::cout << !column_1.at(0) << std::endl;
 	std::cout << ~column_1.at(6) << std::endl;
+	std::cout << column_1.at(0) + 10 << std::endl;
+	std::cout << column_1.at(0) - 10 << std::endl;
 	std::cout << column_1.at(0) * 2 << std::endl;
+	std::cout << column_1.at(0) / 2 << std::endl;
 	std::cout << column_1.at(0) * column_1.at(0) << std::endl;
 	std::cout << std::nullopt * column_1.at(0) * column_1.at(0) << std::endl;
 	std::cout << 2 * column_1.front() << std::endl;

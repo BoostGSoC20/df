@@ -53,7 +53,7 @@ private:
 	template <typename TOut=element_type>
 	inline auto operator_(std::function<std::optional<TOut> (optional_type)> func) const {
 		std::vector<std::optional<TOut> > content;
-		for (auto element: this->content_) {
+		for (const auto& element: this->content_) {
 			content.push_back(func(element));
 		}
 		return column<TOut>(content);
@@ -67,7 +67,7 @@ public:
 
 	template <typename T=const std::initializer_list<element_type> >
 	column(T list) {
-		for (auto element: list) {
+		for (const auto& element: list) {
 			this->content_.emplace_back(optional_type(element));
 		}
 	}
@@ -194,14 +194,18 @@ public:
 };
 
 // Operator overloading function for output stream
+//  Implemented operators: <<
 
 template<typename T>
 std::ostream& operator<<(std::ostream &out, const column<T> &col) {
-	for (auto element: col.content_) {
+	for (const auto& element: col.content_) {
 		out << element << std::endl;
 	}
 	return out;
 }
+
+// Operator overloading function for binary operators
+
 
 // Column reference class
 //  An intermediate class containing a column reference to (col) and an index (i) to provide 
@@ -284,6 +288,7 @@ public:
 };
 
 // Operator overloading function for output stream
+//  Implemented operators: <<
 
 template<typename T>
 std::ostream& operator<<(std::ostream &out, const column_ref<T> &ref) {

@@ -19,6 +19,7 @@ namespace df {
 
 
 // Operator overloading function for output stream
+//  Implemented operators: <<
 //  If variable has value, output value, otherwise output NULLOPT
 
 const std::string NULLOPT = "Null";
@@ -103,13 +104,67 @@ std::optional<bool> operator!(const std::optional<T> &rhs) {
 }
 
 // Operator overloading function for binary operators
-//  Implemented operators: *
+//  Implemented operators: + - * /
 //  Cases for templated typename T:
 //   (1) T `op` std::optional<T>
 //   (2) std::optional<T> `op` T
 //   (3) std::optional<T> `op` std::optional<T>
 //   (4) std::optional<T> `op` std::nullopt_t
 //   (5) std::nullopt_t `op` std::optional<T>
+
+// operator+
+
+template<typename T>
+std::optional<T> operator+(const T &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::plus<T>());
+}
+
+template<typename T>
+std::optional<T> operator+(const std::optional<T> &lhs, const T &rhs) {
+	return operator_<T>(lhs, rhs, std::plus<T>());
+}
+
+template<typename T>
+std::optional<T> operator+(const std::optional<T> &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::plus<T>());
+}
+
+template<typename T>
+std::optional<T> operator+(const std::optional<T> &, const std::nullopt_t &) {
+	return std::nullopt;
+}
+
+template<typename T> 
+std::optional<T> operator+(const std::nullopt_t &, const std::optional<T> &) {
+	return std::nullopt;
+}
+
+// operator-
+
+template<typename T>
+std::optional<T> operator-(const T &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::minus<T>());
+}
+
+template<typename T>
+std::optional<T> operator-(const std::optional<T> &lhs, const T &rhs) {
+	return operator_<T>(lhs, rhs, std::minus<T>());
+}
+
+template<typename T>
+std::optional<T> operator-(const std::optional<T> &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::minus<T>());
+}
+
+template<typename T>
+std::optional<T> operator-(const std::optional<T> &, const std::nullopt_t &) {
+	return std::nullopt;
+}
+
+template<typename T> 
+std::optional<T> operator-(const std::nullopt_t &, const std::optional<T> &) {
+	return std::nullopt;
+}
 
 // operator*
 
@@ -133,8 +188,36 @@ std::optional<T> operator*(const std::optional<T> &, const std::nullopt_t &) {
 	return std::nullopt;
 }
 
-template<typename T>
+template<typename T> 
 std::optional<T> operator*(const std::nullopt_t &, const std::optional<T> &) {
+	return std::nullopt;
+}
+
+
+// operator/
+
+template<typename T>
+std::optional<T> operator/(const T &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::divides<T>());
+}
+
+template<typename T>
+std::optional<T> operator/(const std::optional<T> &lhs, const T &rhs) {
+	return operator_<T>(lhs, rhs, std::divides<T>());
+}
+
+template<typename T>
+std::optional<T> operator/(const std::optional<T> &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::divides<T>());
+}
+
+template<typename T>
+std::optional<T> operator/(const std::optional<T> &, const std::nullopt_t &) {
+	return std::nullopt;
+}
+
+template<typename T> 
+std::optional<T> operator/(const std::nullopt_t &, const std::optional<T> &) {
 	return std::nullopt;
 }
 
