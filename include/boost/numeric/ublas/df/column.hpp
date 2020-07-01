@@ -44,20 +44,36 @@ private:
 	// Helper function for index bounds checking
 
 	inline bool test_index_(size_t index) const {
-		// type size_t cannot be negative, no need to test
+		// note type size_t cannot be negative, no need to test
 		return index < this->content_.size();
 	}
 
-	// Helper function for unary operations
+	// Helper function for unary operations on one column and binary operations with one column only
 
 	template <typename TOut=element_type>
 	inline auto operator_(std::function<std::optional<TOut> (optional_type)> func) const {
 		std::vector<std::optional<TOut> > content;
+		content.reserve(this->size());
 		for (const auto& element: this->content_) {
 			content.push_back(func(element));
 		}
 		return column<TOut>(content);
 	}
+
+	// Helper function for binary operations with two columns
+	//  Note the returned column has the same size as that of the larger column
+
+	template <typename TOut=element_type>
+	inline auto operator_(std::function<std::optional<TOut> (optional_type, optional_type)> func, const column<element_type> &rhs) const {
+		size_t size = std::max(this->size(), rhs.size());
+		std::vector<std::optional<TOut> > content;
+		content.reserve(size);
+		for (int i = 0; i < size; ++i) {
+			content.push_back(func(this->at(i), rhs.at(i)));
+		}
+		return column<TOut>(content);
+	}
+
 public:
 	// Constructor
 	//  Note constructor takes as parameter a std::initializer_list 
@@ -67,6 +83,8 @@ public:
 
 	template <typename T=const std::initializer_list<element_type> >
 	column(T list) {
+		// reserve memory to avoid unnecessary allocation and deallocation
+		this->content_.reserve(list.size());
 		for (const auto& element: list) {
 			this->content_.emplace_back(optional_type(element));
 		}
@@ -80,14 +98,12 @@ public:
 	// Operator overloading function for broadcasted assignment
 
 	auto operator=(element_type value) {
-		std::fill(this->content_.begin(), this->content_.end(), 
-			optional_type(value));
+		std::fill(this->content_.begin(), this->content_.end(), optional_type(value));
 		return *this; // reference, not copy
 	}
 
-	auto operator=(std::nullopt_t value) {
-		std::fill(this->content_.begin(), this->content_.end(), 
-			value);
+	auto operator=(std::nullopt_t) {
+		std::fill(this->content_.begin(), this->content_.end(), std::nullopt);
 		return *this; // reference, not copy
 	}
 
@@ -106,6 +122,7 @@ public:
 		if (this->test_index_(index)) {
 			return this->content_[index];
 		} else {
+			// returns std::nullopt for out of bounds access; does not throw an exception
 			return optional_type(std::nullopt);
 		}
 	}
@@ -187,6 +204,56 @@ public:
 		return this->operator_<bool>([](auto x) { return !x; });
 	}
 
+	// Operator overloading function for binary operators
+	//  Implemented operators:
+	//    Arithmetic: + - * / %
+
+	//  Cases for templated typename T:
+	//   (1) column<T> `op` column<T>
+	//   (2) column<T> `op` T
+	//   (3) column<T> `op` std::optional<T>
+	//   (4) T `op` column<T>
+	//   (5) std::optional<T> `op` column<T>
+	//   (6) column<T> `op` std::nullopt_t
+	//   (7) std::nullopt_t `op` column<T>
+
+	// operator*
+
+	template<typename T>
+	friend auto operator*(const column<T> &self, const column<T> &rhs) {
+		return self.template operator_<T>([](auto x, auto y) { return x * y; }, rhs);
+	}
+
+	template<typename T>
+	friend auto operator*(const column<T> &self, const T &value) {
+		return self.template operator_<T>([value](auto x) { return x * value; });
+	}
+
+	template<typename T>
+	friend auto operator*(const column<T> &self, const std::optional<T> &value) {
+		return self.template operator_<T>([value](auto x) { return x * value; });
+	}
+
+	template<typename T>
+	friend auto operator*(const T &value, const column<T> &self) {
+		return self.template operator_<T>([value](auto x) { return value * x; });
+	}
+
+	template<typename T>
+	friend auto operator*(const std::optional<T> &value, const column<T> &self) {
+		return self.template operator_<T>([value](auto x) { return value * x; });
+	}
+
+	template<typename T>
+	friend auto operator*(const column<T> &self, const std::nullopt_t &) {
+		return self.template operator_<T>([](auto) { return std::nullopt; });
+	}
+
+	template<typename T>
+	friend auto operator*(const std::nullopt_t &, const column<T> &self) {
+		return self.template operator_<T>([](auto) { return std::nullopt; });
+	}
+
 	// Friend declaration for output stream operator to access content_
 
 	template<typename T>
@@ -203,8 +270,6 @@ std::ostream& operator<<(std::ostream &out, const column<T> &col) {
 	}
 	return out;
 }
-
-// Operator overloading function for binary operators
 
 
 // Column reference class
@@ -223,13 +288,19 @@ private:
 	column<element_type> &column_;
 	size_t index_;
 
-	// Helper function for unary operations
+	// Helper function for unary operations on one column reference and binary operations with one column reference only
 
 	template <typename TOut=element_type>
 	inline auto operator_(std::function<std::optional<TOut> (optional_type)> func) const {
 		return func(this->column_.at(this->index_));
 	}
 
+	// Helper function for binary operations with two column references
+
+	template <typename TOut=element_type>
+	inline auto operator_(std::function<std::optional<TOut> (optional_type, optional_type)> func, const column_ref<element_type> &rhs) const {
+		return func(this->column_.at(this->index_), rhs.column_.at(rhs.index_));
+	}
 public:
 	// Constructor
 
@@ -279,6 +350,55 @@ public:
 
 	auto operator!() const {
 		return this->operator_<bool>([](auto x) { return !x; });
+	}
+
+	// Operator overloading function for binary operators
+	//  Implemented operators: 
+
+	//  Cases for templated typename T:
+	//   (1) column_ref<T> `op` column_ref<T>
+	//   (2) column_ref<T> `op` T
+	//   (3) column_ref<T> `op` std::optional<T>
+	//   (4) column_ref<T> `op` std::nullopt_t
+	//   (5) T `op` column_ref<T>
+	//   (6) std::optional<T> `op` column_ref<T>
+	//   (7) std::nullopt_t `op` column_ref<T>
+
+	// operator*
+
+	template<typename T>
+	friend auto operator*(const column_ref<T> &self, const column_ref<T> &rhs) {
+		return self.template operator_<T>([](auto x, auto y) { return x * y; }, rhs);
+	}
+
+	template<typename T>
+	friend auto operator*(const column_ref<T> &self, const T &value) {
+		return self.template operator_<T>([value](auto x) { return x * value; });
+	}
+
+	template<typename T>
+	friend auto operator*(const column_ref<T> &self, const std::optional<T> &value) {
+		return self.template operator_<T>([value](auto x) { return x * value; });
+	}
+
+	template<typename T>
+	friend auto operator*(const T &value, const column_ref<T> &self) {
+		return self.template operator_<T>([value](auto x) { return value * x; });
+	}
+
+	template<typename T>
+	friend auto operator*(const std::optional<T> &value, const column_ref<T> &self) {
+		return self.template operator_<T>([value](auto x) { return value * x; });
+	}
+
+	template<typename T>
+	friend auto operator*(const column_ref<T> &self, const std::nullopt_t &) {
+		return self.template operator_<T>([](auto) { return std::nullopt; });
+	}
+
+	template<typename T>
+	friend auto operator*(const std::nullopt_t &, const column_ref<T> &self) {
+		return self.template operator_<T>([](auto) { return std::nullopt; });
 	}
 
 	// Friend declaration for output stream operator to access content_

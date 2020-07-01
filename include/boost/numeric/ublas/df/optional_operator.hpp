@@ -104,7 +104,9 @@ std::optional<bool> operator!(const std::optional<T> &rhs) {
 }
 
 // Operator overloading function for binary operators
-//  Implemented operators: + - * /
+//  Implemented operators:
+//    Arithmetic: + - * / %
+
 //  Cases for templated typename T:
 //   (1) T `op` std::optional<T>
 //   (2) std::optional<T> `op` T
@@ -193,7 +195,6 @@ std::optional<T> operator*(const std::nullopt_t &, const std::optional<T> &) {
 	return std::nullopt;
 }
 
-
 // operator/
 
 template<typename T>
@@ -218,6 +219,33 @@ std::optional<T> operator/(const std::optional<T> &, const std::nullopt_t &) {
 
 template<typename T> 
 std::optional<T> operator/(const std::nullopt_t &, const std::optional<T> &) {
+	return std::nullopt;
+}
+
+// operator%
+
+template<typename T>
+std::optional<T> operator%(const T &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::modulus<T>());
+}
+
+template<typename T>
+std::optional<T> operator%(const std::optional<T> &lhs, const T &rhs) {
+	return operator_<T>(lhs, rhs, std::modulus<T>());
+}
+
+template<typename T>
+std::optional<T> operator%(const std::optional<T> &lhs, const std::optional<T> &rhs) {
+	return operator_<T>(lhs, rhs, std::modulus<T>());
+}
+
+template<typename T>
+std::optional<T> operator%(const std::optional<T> &, const std::nullopt_t &) {
+	return std::nullopt;
+}
+
+template<typename T> 
+std::optional<T> operator%(const std::nullopt_t &, const std::optional<T> &) {
 	return std::nullopt;
 }
 

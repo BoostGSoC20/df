@@ -15,7 +15,7 @@ The source code of the implementation of data frame is placed in the `include/bo
 
 ## Column and frame ontainer
 
-A column class and a frame class are defined in the `boost::numeric::ublas::df` namespace.
+A column class `column` and a frame class `frame` are defined in the `boost::numeric::ublas::df` namespace.
 
 A column `column<element_type>` as a homogeneous container manages a homogeneous `std::vector<element_type>` of `std::optional` elements of templated type `element_type`. (This is a different design compared with a [2019 GSoC implementation](https://github.com/BoostGSoC19/data_frame), in which the column class `data_frame_col` as a heterogeneous container manages a homogeneous `boost::numeric::ublas::vector` of elements.)
 
@@ -25,9 +25,26 @@ Note that `element_type` is a user-provided type, which could be any POD type (e
 
 While it could be redundant to have, for example, `std::optional<T>` as the `element_type` since `optional_type` would be `std::optional<std::optional<T> >`, this possibility is not ruled out for the implementation and should be handled correctly.
 
-## Mutability and view
+## Operations
 
-No separate data structure is defined for a view of a frame or a column for simplicity. Unary or binary operations on columns or frames, such as filtering or merging operations, produce a new frame or column data structure. (Debatable)
+Mutating operations on a `column` include the following: 
+* Class methods (wrapper of `std::vector` class methods): 
+    * For element access: `at()` `front()` `back()`
+    * For capacity: `empty()` `size()` `max_size()` `capacity()`
+* Helper functions for operations on indexed element: `set()` `reset()`
+
+Non-mutating operations on a `column` include the following: 
+* Class methods (wrapper of `std::vector` class methods): 
+    * For capacity: `reserve()` `shrink_to_fit()` 
+    * For modifying: `clear()`
+* Operator overloading for unary or binary operations (which return a new instance of `column`):
+    * Unary operations: `+` `-` `!` `~`
+    * Binary operations:
+        * Arithmetic: `+` `-` `*` `/` `%`
+
+## View
+
+A data structure can be defined for a view of a frame or a column. (To review)
 
 ## Null value and type
 

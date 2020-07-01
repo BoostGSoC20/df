@@ -31,6 +31,7 @@ int main () {
 	std::cout << column_1[0] << std::endl;
 	std::cout << -column_1[1] << std::endl;
 	std::cout << column_1[-1] << std::endl; // out of bounds
+	std::cout << column_1[2] * column_1[2] << std::endl;
 	column_1[0] = 100;
 	column_1.reset(8);
 	column_1[9] = std::nullopt;
@@ -45,8 +46,12 @@ int main () {
 
 	column<int32_t> column_2(column_1);
 	column_2.reserve(20);
+	column_2 = column_2;
 	column_2 = +column_2;
 	column_2 = -column_2;
+	column_2 = 2 * column_2;
+	column_2 = column_2 * -1;
+	column_2 = column_2 * column_2;
 	// std::cout << column_2.begin();
 	std::cout << "size=" << column_2.size() << std::endl;
 	std::cout << "capacity=" << column_2.capacity() << std::endl;
