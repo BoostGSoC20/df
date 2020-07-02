@@ -38,9 +38,15 @@ Non-mutating operations on a `column` include the following:
     * For capacity: `reserve()` `shrink_to_fit()` 
     * For modifying: `clear()`
 * Operator overloading for unary or binary operations (which return a new instance of `column`):
-    * Unary operations: `+` `-` `!` `~`
+    * Unary operations: 
+        * Arithmetic: `+` `-`
+        * Logical: `!`
+        * Bitwise: `~`
     * Binary operations:
         * Arithmetic: `+` `-` `*` `/` `%`
+        * Comparison: `==` `!=` `>` `<` `>=` `<=`
+        * Logical: `&&` `||`
+        * Bitwise: `&` `|` `^`
 
 ## View
 
@@ -52,7 +58,7 @@ Every element is contained in a `std::optional<element_type>` class, short-hande
 
 A null value `std::nullopt` is printed `Null` (similar to `None` object in Python or `NULL` object in R).
 
-As a general rule, any operation on a null value and a non-null value (in either order) would return a null value.
+As a general rule, any operation on a null value and a non-null value (in either order) would return a null value. Exceptions are comparison operators `==` and `!=` on a null value and a non-null value (in either order), for which a Boolean value is returned.
 
 Since missing data is common in work-flows with data frames, it is worth the extra effort in carefully designing data structures to handle null values. This can facilitate data imputation, which is to replace null values with substituted values inferred from non-null values. Features such as value fill `fillna()`, forward fill `ffill()` and backward fill `bfill()` functions to be implemented in algorithms.
 

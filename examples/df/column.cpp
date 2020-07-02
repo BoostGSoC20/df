@@ -18,6 +18,7 @@ int main () {
 	});
 
 	std::cout << column_1.at(0) << std::endl;
+	std::cout << (column_1.at(0) == column_1.at(0)) << std::endl;
 	std::cout << !column_1.at(0) << std::endl;
 	std::cout << ~column_1.at(6) << std::endl;
 	std::cout << column_1.at(0) + 10 << std::endl;
@@ -67,6 +68,11 @@ int main () {
 	std::cout << "size=" << column_3.size() << std::endl;
 	std::cout << "capacity=" << column_3.capacity() << std::endl;
 	std::cout << column_3 << std::endl;
+
+	// initialize with empty constructor
+	column<bool> column_4;
+	column_4 = (column_2 == column_2);
+	std::cout << column_4 << std::endl;
 
 	return 0;
 }

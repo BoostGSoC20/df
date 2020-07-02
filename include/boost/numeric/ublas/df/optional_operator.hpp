@@ -53,8 +53,8 @@ inline std::optional<TOut> operator_(const std::optional<TIn> &rhs, std::functio
 //   (2) std::optional<T> `op` T
 //   (3) std::optional<T> `op` std::optional<T>
 
-template<typename T>
-inline std::optional<T> operator_(const T &lhs, const std::optional<T> &rhs, std::function<T (T, T)> func) {
+template<typename TIn, typename TOut=TIn>
+inline std::optional<TOut> operator_(const TIn &lhs, const std::optional<TIn> &rhs, std::function<TOut (TIn, TIn)> func) {
 	if (rhs.has_value()) {
 		return func(lhs, rhs.value());
 	} else {
@@ -62,8 +62,8 @@ inline std::optional<T> operator_(const T &lhs, const std::optional<T> &rhs, std
 	}
 }
 
-template<typename T>
-inline std::optional<T> operator_(const std::optional<T> &lhs, const T &rhs, std::function<T (T, T)> func) {
+template<typename TIn, typename TOut=TIn>
+inline std::optional<TOut> operator_(const std::optional<TIn> &lhs, const TOut &rhs, std::function<TOut (TIn, TIn)> func) {
 	if (lhs.has_value()) {
 		return func(lhs.value(), rhs);
 	} else {
@@ -71,8 +71,8 @@ inline std::optional<T> operator_(const std::optional<T> &lhs, const T &rhs, std
 	}
 }
 
-template<typename T>
-inline std::optional<T> operator_(const std::optional<T> &lhs, const std::optional<T> &rhs, std::function<T (T, T)> func) {
+template<typename TIn, typename TOut=TIn>
+inline std::optional<TOut> operator_(const std::optional<TIn> &lhs, const std::optional<TIn> &rhs, std::function<TOut (TIn, TIn)> func) {
 	if (lhs.has_value() && rhs.has_value()) {
 		return func(lhs.value(), rhs.value());
 	} else {
@@ -81,7 +81,10 @@ inline std::optional<T> operator_(const std::optional<T> &lhs, const std::option
 }
 
 // Operator overloading function for unary operators
-//  Implemented operators: + - ! ~
+//  Implemented operators: 
+//   Arithmetic: + -
+//   Logical: !
+//   Bitwise: ~
 
 template<typename T>
 std::optional<T> operator+(const std::optional<T> &rhs) {
@@ -105,7 +108,10 @@ std::optional<bool> operator!(const std::optional<T> &rhs) {
 
 // Operator overloading function for binary operators
 //  Implemented operators:
-//    Arithmetic: + - * / %
+//   Arithmetic: + - * / %
+//   Comparison: == != > < >= <=
+//   Logical: && ||
+//   Bitwise: & | ^
 
 //  Cases for templated typename T:
 //   (1) T `op` std::optional<T>
@@ -118,17 +124,17 @@ std::optional<bool> operator!(const std::optional<T> &rhs) {
 
 template<typename T>
 std::optional<T> operator+(const T &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::plus<T>());
+	return operator_<T, T>(lhs, rhs, std::plus<T>());
 }
 
 template<typename T>
 std::optional<T> operator+(const std::optional<T> &lhs, const T &rhs) {
-	return operator_<T>(lhs, rhs, std::plus<T>());
+	return operator_<T, T>(lhs, rhs, std::plus<T>());
 }
 
 template<typename T>
 std::optional<T> operator+(const std::optional<T> &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::plus<T>());
+	return operator_<T, T>(lhs, rhs, std::plus<T>());
 }
 
 template<typename T>
@@ -145,17 +151,17 @@ std::optional<T> operator+(const std::nullopt_t &, const std::optional<T> &) {
 
 template<typename T>
 std::optional<T> operator-(const T &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::minus<T>());
+	return operator_<T, T>(lhs, rhs, std::minus<T>());
 }
 
 template<typename T>
 std::optional<T> operator-(const std::optional<T> &lhs, const T &rhs) {
-	return operator_<T>(lhs, rhs, std::minus<T>());
+	return operator_<T, T>(lhs, rhs, std::minus<T>());
 }
 
 template<typename T>
 std::optional<T> operator-(const std::optional<T> &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::minus<T>());
+	return operator_<T, T>(lhs, rhs, std::minus<T>());
 }
 
 template<typename T>
@@ -172,17 +178,17 @@ std::optional<T> operator-(const std::nullopt_t &, const std::optional<T> &) {
 
 template<typename T>
 std::optional<T> operator*(const T &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::multiplies<T>());
+	return operator_<T, T>(lhs, rhs, std::multiplies<T>());
 }
 
 template<typename T>
 std::optional<T> operator*(const std::optional<T> &lhs, const T &rhs) {
-	return operator_<T>(lhs, rhs, std::multiplies<T>());
+	return operator_<T, T>(lhs, rhs, std::multiplies<T>());
 }
 
 template<typename T>
 std::optional<T> operator*(const std::optional<T> &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::multiplies<T>());
+	return operator_<T, T>(lhs, rhs, std::multiplies<T>());
 }
 
 template<typename T>
@@ -199,17 +205,17 @@ std::optional<T> operator*(const std::nullopt_t &, const std::optional<T> &) {
 
 template<typename T>
 std::optional<T> operator/(const T &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::divides<T>());
+	return operator_<T, T>(lhs, rhs, std::divides<T>());
 }
 
 template<typename T>
 std::optional<T> operator/(const std::optional<T> &lhs, const T &rhs) {
-	return operator_<T>(lhs, rhs, std::divides<T>());
+	return operator_<T, T>(lhs, rhs, std::divides<T>());
 }
 
 template<typename T>
 std::optional<T> operator/(const std::optional<T> &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::divides<T>());
+	return operator_<T, T>(lhs, rhs, std::divides<T>());
 }
 
 template<typename T>
@@ -226,17 +232,17 @@ std::optional<T> operator/(const std::nullopt_t &, const std::optional<T> &) {
 
 template<typename T>
 std::optional<T> operator%(const T &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::modulus<T>());
+	return operator_<T, T>(lhs, rhs, std::modulus<T>());
 }
 
 template<typename T>
 std::optional<T> operator%(const std::optional<T> &lhs, const T &rhs) {
-	return operator_<T>(lhs, rhs, std::modulus<T>());
+	return operator_<T, T>(lhs, rhs, std::modulus<T>());
 }
 
 template<typename T>
 std::optional<T> operator%(const std::optional<T> &lhs, const std::optional<T> &rhs) {
-	return operator_<T>(lhs, rhs, std::modulus<T>());
+	return operator_<T, T>(lhs, rhs, std::modulus<T>());
 }
 
 template<typename T>
@@ -249,7 +255,36 @@ std::optional<T> operator%(const std::nullopt_t &, const std::optional<T> &) {
 	return std::nullopt;
 }
 
+// operator==
 
+template<typename T>
+std::optional<bool> operator==(const T &lhs, const std::optional<T> &rhs) {
+	return operator_<T, bool>(lhs, rhs, std::equal_to<T>());
+}
+
+template<typename T>
+std::optional<bool> operator==(const std::optional<T> &lhs, const T &rhs) {
+	return operator_<T, bool>(lhs, rhs, std::equal_to<T>());
+}
+
+template<typename T>
+std::optional<bool> operator==(const std::optional<T> &lhs, const std::optional<T> &rhs) {
+	if (!lhs.has_value() && !rhs.has_value()) {
+		return true;
+	} else {
+		return operator_<T, bool>(lhs, rhs, std::equal_to<T>());
+	}
+}
+
+template<typename T>
+std::optional<bool> operator==(const std::optional<T> &lhs, const std::nullopt_t &) {
+	return !lhs.has_value();
+}
+
+template<typename T> 
+std::optional<bool> operator==(const std::nullopt_t &, const std::optional<T> &rhs) {
+	return !rhs.has_value();
+}
 
 
 }

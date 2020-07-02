@@ -186,7 +186,10 @@ public:
 	}
 
 	// Operator overloading function for unary operators
-	//  Implemented operators: + - ! ~
+	//  Implemented operators: 
+	//   Arithmetic: + -
+	//   Logical: !
+	//   Bitwise: ~
 
 	auto operator+() const {
 		return this->operator_<element_type>([](auto x) { return +x; });
@@ -206,7 +209,8 @@ public:
 
 	// Operator overloading function for binary operators
 	//  Implemented operators:
-	//    Arithmetic: + - * / %
+	//   Arithmetic: *
+	//   Comparison: ==
 
 	//  Cases for templated typename T:
 	//   (1) column<T> `op` column<T>
@@ -252,6 +256,43 @@ public:
 	template<typename T>
 	friend auto operator*(const std::nullopt_t &, const column<T> &self) {
 		return self.template operator_<T>([](auto) { return std::nullopt; });
+	}
+
+	// operator==
+
+	template<typename T>
+	friend auto operator==(const column<T> &self, const column<T> &rhs) {
+		return self.template operator_<bool>([](auto x, auto y) { return x == y; }, rhs);
+	}
+
+	template<typename T>
+	friend auto operator==(const column<T> &self, const T &value) {
+		return self.template operator_<bool>([value](auto x) { return x == value; });
+	}
+
+	template<typename T>
+	friend auto operator==(const column<T> &self, const std::optional<T> &value) {
+		return self.template operator_<bool>([value](auto x) { return x == value; });
+	}
+
+	template<typename T>
+	friend auto operator==(const T &value, const column<T> &self) {
+		return self.template operator_<bool>([value](auto x) { return value == x; });
+	}
+
+	template<typename T>
+	friend auto operator==(const std::optional<T> &value, const column<T> &self) {
+		return self.template operator_<bool>([value](auto x) { return value == x; });
+	}
+
+	template<typename T>
+	friend auto operator==(const column<T> &self, const std::nullopt_t &) {
+		return self.template operator_<bool>([](auto x) { return !x.has_value(); });
+	}
+
+	template<typename T>
+	friend auto operator==(const std::nullopt_t &, const column<T> &self) {
+		return self.template operator_<bool>([](auto x) { return !x.has_value(); });
 	}
 
 	// Friend declaration for output stream operator to access content_
@@ -334,7 +375,10 @@ public:
 	}
 
 	// Operator overloading function for unary operators
-	//  Implemented operators: + - ! ~
+	//  Implemented operators: 
+	//   Arithmetic: + -
+	//   Logical: !
+	//   Bitwise: ~
 
 	auto operator+() const {
 		return this->operator_<element_type>([](auto x) { return +x; });
@@ -354,6 +398,8 @@ public:
 
 	// Operator overloading function for binary operators
 	//  Implemented operators: 
+	//   Arithmetic: *
+	//   Comparison: ==
 
 	//  Cases for templated typename T:
 	//   (1) column_ref<T> `op` column_ref<T>
