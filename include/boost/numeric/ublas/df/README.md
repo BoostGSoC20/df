@@ -17,7 +17,7 @@ The source code of the implementation of data frame is placed in the `include/bo
 
 A column class `column` and a frame class `frame` are defined in the `boost::numeric::ublas::df` namespace.
 
-A column `column<element_type>` as a homogeneous container manages a homogeneous `std::vector<element_type>` of `std::optional` elements of templated type `element_type`. (This is a different design compared with a [2019 GSoC implementation](https://github.com/BoostGSoC19/data_frame), in which the column class `data_frame_col` as a heterogeneous container manages a homogeneous `boost::numeric::ublas::vector` of elements.)
+A column `column<element_type>` as a homogeneous container manages a homogeneous `std::vector<element_type>` of `std::optional` elements of templated type `element_type`. (This is a different design compared with a [2019 GSoC implementation](https://github.com/BoostGSoC19/data_frame), in which the column class `data_frame_col` as a heterogeneous container manages a homogeneous `boost::numeric::ublas::vector` of elements. The design adopted avoids redundant code in handling type variants.)
 
 ## Element type
 
@@ -50,7 +50,7 @@ Non-mutating operations on a `column` include the following:
 
 ## View
 
-A data structure can be defined for a view of a frame or a column. (To review)
+A data structure can be defined for a view or range or slice of a frame or a column. (To review)
 
 ## Null value and type
 
@@ -67,6 +67,8 @@ Since missing data is common in work-flows with data frames, it is worth the ext
 The implementation requires support for C++17 or newer to compile due to the use of `std::optional` class template defined in C++ standard libraries since C++17.
 
 The implementation requires support for C++14 or newer to compile due to the use of initializer lists `std::initializer_list` class template defined in C++ standard libraries since C++14.
+
+The implementation requires support for C++11 or newer to compile due to the use of lambda expressions and `auto` keyword defined in C++ standard libraries since C++11.
 
 ## Programming choices
 
