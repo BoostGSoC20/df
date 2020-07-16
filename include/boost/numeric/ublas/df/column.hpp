@@ -15,6 +15,10 @@
 #include <functional>
 #include <algorithm>
 
+#include <typeinfo>
+#include <cxxabi.h>
+#include <stdlib.h>
+
 #include <iostream>
 
 #include "optional_operator.hpp"
@@ -309,6 +313,11 @@ std::ostream& operator<<(std::ostream &out, const column<T> &col) {
 	for (const auto& element: col.content_) {
 		out << element << std::endl;
 	}
+
+	char *name = abi::__cxa_demangle(typeid(T).name(), 0, 0, nullptr);
+	out << "type:  " << name << std::endl;
+	free(name);
+
 	return out;
 }
 
